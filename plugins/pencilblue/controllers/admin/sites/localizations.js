@@ -42,35 +42,27 @@ module.exports = function LocalizationModule(pb) {
      */
     Localization.prototype.render = function(cb) {
         var self = this;
-        var id = this.site;
+
         var dao = new pb.DAO();
-        dao.loadByValue('uid', id, 'site', function(err, data) {
+        dao.loadByValue('uid', self.site, 'site', function(err, data) {
             if (util.isError(err)) {
                 return cb(err);
             }
 
-            var options = {};
-            if (data) {
-                options.isNew = false;
-                options.display = data.displayName.toString();
-                options.host = data.hostname.toString();
+            if(data){
                 self.savedLocales = data.supportedLocales;
-                options.defaultLocale = data.defaultLocale;
-                options.isActive = data.active;
-                options.uid = data.uid;
+                self.defaultLocale = data.defaultLocale;
             }
-
             setupAngularObj(self, cb);
         });
-
     };
 
     function setupAngularObj(self, cb){
         var pluginService = new pb.PluginService({site: self.site});
         var activePlugins = pluginService.getActivePluginNames();
-        var savedLocales = {},
+        var savedLocales = self.savedLocales || {},
             selectedLocales,
-            defaultLocale = pb.Localization.getDefaultLocale();
+            defaultLocale = self.defaultLocale || pb.Localization.getDefaultLocale();
 
         self.ts.registerLocal("active_theme", new pb.TemplateValue(self.activeTheme,false));
         savedLocales[defaultLocale] = true;
